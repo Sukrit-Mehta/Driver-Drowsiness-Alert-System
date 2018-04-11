@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "956998581156",
+    "firebase_url": "https://driverdrowsinessalertsystem.firebaseio.com",
+    "project_id": "driverdrowsinessalertsystem",
+    "storage_bucket": "driverdrowsinessalertsystem.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:956998581156:android:822d24ebd61ce506",
+        "android_client_info": {
+          "package_name": "com.example.sukrit.driverdrowsinessalertsystem"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "956998581156-0ea1m8se14rdtjhftb69cvda122np5ir.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sukrit.driverdrowsinessalertsystem",
+            "certificate_hash": "5a4c7908378045b2dffbe13243254b395544cc0f"
+          }
+        },
+        {
+          "client_id": "956998581156-26u3fja4enfjgdgat67k9jbqpf1lgrqh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhkp3rh_NKRd9KwkW4ax89VB4qIFHZoAY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "956998581156-26u3fja4enfjgdgat67k9jbqpf1lgrqh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
