@@ -22,15 +22,17 @@
         android:theme="@style/AppTheme">
         <activity android:name=".Activities.LoginActivity">
 
-            <!--
+
+
+
+        </activity>
+        <activity android:name=".Activities.SignupActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            -->
         </activity>
-        <activity android:name=".Activities.SignupActivity" />
         <activity
             android:name=".Activities.HomeActivity"
             android:label="@string/title_activity_main"
@@ -50,11 +52,11 @@
             android:label="@string/title_activity_user"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".Activities.AddRideActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
         </activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
