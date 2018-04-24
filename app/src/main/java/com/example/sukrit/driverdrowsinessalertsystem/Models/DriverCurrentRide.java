@@ -19,10 +19,15 @@ public class DriverCurrentRide {
     String endTime;
     String date;
     Double rating;
+    Double currentLat;
+    Double currentLng;
+    String vehicleNo;
+    Boolean isMoving;
+    public DriverCurrentRide(){}
 
-    public DriverCurrentRide(String source, String destination, String driverID, Integer sleepCount,
-                             Double avgSpeed, Double startLat, Double startLng, Double endLat, Double endLng, String startTime,
-                             String endTime, String date, Double rating) {
+    public DriverCurrentRide(String source, String destination, String driverID, Integer sleepCount, Double avgSpeed, Double startLat,
+                             Double startLng, Double endLat, Double endLng, String startTime,
+                             String endTime, String date, Double rating, Double currentLat, Double currentLng, String vehicleNo,Boolean isMoving) {
         this.source = source;
         this.destination = destination;
         this.driverID = driverID;
@@ -36,8 +41,11 @@ public class DriverCurrentRide {
         this.endTime = endTime;
         this.date = date;
         this.rating = rating;
+        this.currentLat = currentLat;
+        this.currentLng = currentLng;
+        this.vehicleNo = vehicleNo;
+        this.isMoving = isMoving;
     }
-
 
     public String getSource() {
         return source;
