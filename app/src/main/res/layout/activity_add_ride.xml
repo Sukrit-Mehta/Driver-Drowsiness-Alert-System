@@ -90,6 +90,7 @@
                 android:layout_margin="7dp"
                 android:background="#41a6f4"
                 android:text="Add Ride"
+                android:tag="addRide"
                 android:textColor="#ffffff" />
 
             <ImageView

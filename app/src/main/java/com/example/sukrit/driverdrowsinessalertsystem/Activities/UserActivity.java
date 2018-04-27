@@ -2,10 +2,7 @@ package com.example.sukrit.driverdrowsinessalertsystem.Activities;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -15,15 +12,10 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Toast;
 
 import com.example.sukrit.driverdrowsinessalertsystem.Adapters.UsersRidesAdapter;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.UserRide;
 import com.example.sukrit.driverdrowsinessalertsystem.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -79,9 +71,9 @@ public class UserActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final UserRide demoRide = new UserRide("Meerut","Noida","1234","12:40","14:20","24-10-1997",21.1,55.2,22.3,77.8,2.3,false);
+       // final UserRide demoRide = new UserRide("Meerut","Noida","1234","12:40","14:20","24-10-1997",21.1,55.2,22.3,77.8,2.3,false);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -103,7 +95,7 @@ public class UserActivity extends AppCompatActivity
             }
         });
         fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.add));
-
+*/
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(

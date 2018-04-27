@@ -16,26 +16,9 @@ public class UserRide {
     String endTime;
     String date;
     Double rating;
-    Boolean isTravelling;
 
     public UserRide() {
     }
-
-    public UserRide(String source, String destination, String driverID,  String startTime, String endTime, String date, Double startLat, Double startLng, Double endLat, Double endLng, Double rating, Boolean isTravelling) {
-        this.source = source;
-        this.destination = destination;
-        this.driverID = driverID;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.date = date;
-        this.startLat = startLat;
-        this.startLng = startLng;
-        this.endLat = endLat;
-        this.endLng = endLng;
-        this.rating = rating;
-        this.isTravelling = isTravelling;
-    }
-
 
     public String getSource() {
         return source;
@@ -59,30 +42,6 @@ public class UserRide {
 
     public void setDriverID(String driverID) {
         this.driverID = driverID;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
     }
 
     public Double getStartLat() {
@@ -117,19 +76,35 @@ public class UserRide {
         this.endLng = endLng;
     }
 
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
     public Double getRating() {
         return rating;
     }
 
     public void setRating(Double rating) {
         this.rating = rating;
-    }
-
-    public Boolean getTravelling() {
-        return isTravelling;
-    }
-
-    public void setTravelling(Boolean travelling) {
-        isTravelling = travelling;
     }
 }
