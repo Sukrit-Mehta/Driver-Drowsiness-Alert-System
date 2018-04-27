@@ -12,6 +12,8 @@ public class Driver {
     ArrayList<DriverPastRide> driverPastRides;
     DriverCurrentRide driverCurrentRide;
 
+    public Driver(){}
+
     public Driver(String name, String email, String vehicleNo, String password, String mobNo, ArrayList<DriverPastRide> driverPastRides,DriverCurrentRide driverCurrentRide) {
         this.name = name;
         this.email = email;

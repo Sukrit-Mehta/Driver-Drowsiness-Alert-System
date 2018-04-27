@@ -8,6 +8,8 @@ public class Rider {
 
     String name,email,password,mobNo;
 
+    public Rider(){}
+
     public Rider(String name, String email, String password, String mobNo) {
         this.name = name;
         this.email = email;

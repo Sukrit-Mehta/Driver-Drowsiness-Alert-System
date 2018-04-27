@@ -38,6 +38,7 @@ dependencies {
     compile 'com.theartofdev.edmodo:android-image-cropper:2.4.+'
     compile 'com.google.android.gms:play-services:12.0.1'
     compile 'de.hdodenhof:circleimageview:2.2.0'
+    compile 'com.google.code.gson:gson:2.7'
 }
 
 

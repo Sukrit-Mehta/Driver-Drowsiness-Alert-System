@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sukrit.driverdrowsinessalertsystem.Models.Driver;
@@ -25,6 +26,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.internal.InternalTokenProvider;
+import com.google.gson.Gson;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -32,6 +35,8 @@ public class LoginActivity extends AppCompatActivity {
     EditText etEmail,etPassword;
     Button btnSubmit;
     Switch sw_LoginRider_Driver;
+
+    TextView tvSignUp;
 
     FirebaseAuth firebaseAuth;
     FirebaseDatabase firebaseDatabase;
@@ -42,6 +47,10 @@ public class LoginActivity extends AppCompatActivity {
     SharedPreferences sharedPref;
     public static final String MyTag = "User";
     SharedPreferences.Editor editor;
+    ChildEventListener RiderEventListner;
+    ChildEventListener DriverCheckListner;
+
+    Gson gson;
 
     Boolean flag=false;
     //If flag true means Rider and flag false means driver
@@ -57,10 +66,32 @@ public class LoginActivity extends AppCompatActivity {
         sharedPref = getSharedPreferences(MyTag,MODE_PRIVATE);
         editor = sharedPref.edit();
 
+        if(sharedPref.getBoolean("Driver",false))
+        {
+            Intent thisIntent = new Intent(LoginActivity.this,DriverActivity.class);
+            startActivity(thisIntent);
+        }
+        if(sharedPref.getBoolean("Rider",false))
+        {
+            Intent thisIntent = new Intent(LoginActivity.this,UserActivity.class);
+            startActivity(thisIntent);
+        }
+
         etEmail = findViewById(R.id.login_email);
         etPassword = findViewById(R.id.login_password);
         btnSubmit = findViewById(R.id.btn_Login_Submit);
         sw_LoginRider_Driver = findViewById(R.id.sw_LoginDriver_Rider);
+        tvSignUp = findViewById(R.id.signUp);
+
+        tvSignUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent newIntent = new Intent(LoginActivity.this,SignupActivity.class);
+                startActivity(newIntent);
+            }
+        });
+
+        gson = new Gson();
 
         sw_LoginRider_Driver.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,7 +128,10 @@ public class LoginActivity extends AppCompatActivity {
                                     {
 
 
-                                        ChildEventListener DriverCheckListner = new ChildEventListener() {
+
+
+
+                                        DriverCheckListner = new ChildEventListener() {
                                             @Override
                                             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                                                 Driver thisDriver = dataSnapshot.getValue(Driver.class);
@@ -105,7 +139,11 @@ public class LoginActivity extends AppCompatActivity {
                                                 {
                                                     //Driver Found in the database
                                                     Intent thisIntent = new Intent(LoginActivity.this,DriverActivity.class);
-
+                                                    String thisData = gson.toJson(thisDriver);
+                                                    editor.putString("User",thisData);
+                                                    editor.putBoolean("Driver",true);
+                                                    editor.putBoolean("Rider",false);
+                                                    editor.commit();
                                                     startActivity(thisIntent);
                                                 }
 
@@ -132,7 +170,8 @@ public class LoginActivity extends AppCompatActivity {
                                             }
                                         };
 
-                                        ChildEventListener RiderEventListner = new ChildEventListener() {
+
+                                        RiderEventListner = new ChildEventListener() {
                                             @Override
                                             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                                                 Rider thisRider = dataSnapshot.getValue(Rider.class);
@@ -140,7 +179,13 @@ public class LoginActivity extends AppCompatActivity {
                                                 {
                                                     //Rider Found
                                                     Intent thisIntent = new Intent(LoginActivity.this,UserActivity.class);
+                                                    String thisData = gson.toJson(thisRider);
+                                                    editor.putString("User",thisData);
+                                                    editor.putBoolean("Rider",true);
+                                                    editor.putBoolean("Driver",false);
+                                                    editor.commit();
                                                     startActivity(thisIntent);
+
                                                 }
                                             }
 
@@ -165,8 +210,18 @@ public class LoginActivity extends AppCompatActivity {
                                             }
                                         };
 
+
+                                        if(flag)
+                                        {
+                                            databaseReference.child("Riders").addChildEventListener(RiderEventListner);
+                                        }
+                                        else
+                                        {
+                                            databaseReference.child("Drivers").addChildEventListener(DriverCheckListner);
+                                        }
+
                                         Toast.makeText(LoginActivity.this, "Login Sucessfull!...", Toast.LENGTH_SHORT).show();
-                                        //TODO : Send an intent to the other activity
+
                                     }
 
                                     else
@@ -179,6 +234,21 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(DriverCheckListner!=null)
+        {
+            databaseReference.child("Drivers").removeEventListener(DriverCheckListner);
+        }
+        if(RiderEventListner!=null)
+        {
+            databaseReference.child("Riders").removeEventListener(RiderEventListner);
+        }
 
 
     }
