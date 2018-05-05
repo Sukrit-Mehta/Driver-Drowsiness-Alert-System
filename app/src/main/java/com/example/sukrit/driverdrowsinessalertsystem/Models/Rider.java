@@ -1,5 +1,7 @@
 package com.example.sukrit.driverdrowsinessalertsystem.Models;
 
+import java.util.ArrayList;
+
 /**
  * Created by sharaddadhich on 24/04/18.
  */

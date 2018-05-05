@@ -3,6 +3,7 @@ package com.example.sukrit.driverdrowsinessalertsystem.Activities;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -17,7 +18,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.sukrit.driverdrowsinessalertsystem.Models.Driver;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverCurrentRide;
+import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverPastRide;
+import com.example.sukrit.driverdrowsinessalertsystem.Models.Rider;
 import com.example.sukrit.driverdrowsinessalertsystem.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -34,12 +38,15 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -60,22 +67,43 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
     private boolean permissionIsGranted = false;
     public static final Integer REQUEST_CHECK_SETTINGS = 888;
     ProgressDialog progressDialog;
-    DatabaseReference mCurrentRides;
+    DatabaseReference mCurrentRides,mPastRides;
     Button btnRequestPickup;
     DriverCurrentRide driverCurrentRide;
     String source,destination,driverID,startTime,endTime,date,vehicleNo;
     Integer sleepCount;
     Double avgSpeed,startLat,startLng,endLat,endLng,rating,currentLat,currentLng;
     Boolean isMoving = false;
+    Boolean rideAlive = false;
+
+    SharedPreferences sharedPref;
+    public static final String MyTag = "User";
+    SharedPreferences.Editor editor;
+
+    Driver thisDriver;
+
+
+    Gson gson;
 
     @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_ride);
+
+        gson = new Gson();
+
+
+        sharedPref = getSharedPreferences(MyTag,MODE_PRIVATE);
+        thisDriver =  gson.fromJson(sharedPref.getString("User",""),Driver.class);
+
+
+
+
         //Places API Autocomplete
 
         mCurrentRides = FirebaseDatabase.getInstance().getReference().child("CurrentRides");
+        mPastRides = FirebaseDatabase.getInstance().getReference().child("PastRides");
         btnRequestPickup = findViewById(R.id.btnRequestPickup);
         Log.d(TAG, "onCreate: Add Ride");
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -129,11 +157,11 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         driverID = FirebaseAuth.getInstance().getUid();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
         date = sdf.format(new Date());
-        vehicleNo="UP-15 AW-6258";
+        vehicleNo=thisDriver.getVehicleNo();
 
 
         rating = 4.8;
-        sleepCount=20;
+        sleepCount=0;
 
         PlaceAutocompleteFragment autocompleteSourceFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_source);
@@ -186,14 +214,6 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                     btnRequestPickup.setTag("startRide");
                     btnRequestPickup.setText("Start Ride");
                     btnRequestPickup.setBackgroundColor(Color.parseColor("#5ed83c"));
-                }
-                else if(btnRequestPickup.getTag().equals("startRide")){
-                    btnRequestPickup.setTag("stopRide");
-                    btnRequestPickup.setText("Stop Ride");
-                    btnRequestPickup.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
-                    startTime = Calendar.getInstance().getTime().toString();
-                    isMoving = true;
-
                     driverCurrentRide=new DriverCurrentRide(source,destination,driverID,
                             sleepCount,avgSpeed,startLat,
                             startLng,endLat,endLng,startTime,
@@ -201,7 +221,19 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                             currentLng,vehicleNo,isMoving);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(driverCurrentRide);
                 }
+                else if(btnRequestPickup.getTag().equals("startRide")){
+                    rideAlive = true;
+                    btnRequestPickup.setTag("stopRide");
+                    btnRequestPickup.setText("Stop Ride");
+                    btnRequestPickup.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
+                    startTime = Calendar.getInstance().getTime().toString();
+                    isMoving = true;
+                    mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("isMoving").setValue(isMoving);
+
+
+                }
                 else {
+                    rideAlive = false;
                     btnRequestPickup.setTag("addRide");
                     btnRequestPickup.setText("Add Ride");
                     btnRequestPickup.setBackgroundColor(Color.parseColor("#41a6f4"));
@@ -213,6 +245,10 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                             .child("endLng").setValue(currentLng);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                             .child("isMoving").setValue(false);
+                    mPastRides.push().setValue(driverCurrentRide);
+                    mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
+
+
                 }
             }
         });
@@ -306,23 +342,41 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         currentLat = location.getLatitude();
         currentLng = location.getLongitude();
         avgSpeed = Double.valueOf(location.getSpeed());
-        mCurrentRides.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.hasChild(FirebaseAuth.getInstance().getCurrentUser().getUid()))
-                        {
-                            mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                    .child("currentLat").setValue(currentLat);
-                            mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                    .child("currentLng").setValue(currentLng);
-                        }
+        ValueEventListener thisListner  = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+                {
+                    if(rideAlive)
+                    {
+                        mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                .child("currentLat").setValue(currentLat);
+                        mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                .child("currentLng").setValue(currentLng);
                     }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                }
+            }
 
-                    }
-                });
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        if(rideAlive)
+        {
+            mCurrentRides.addValueEventListener(thisListner);
+        }
+        else
+        {
+            if(thisListner!=null)
+            {
+
+                mCurrentRides.removeEventListener(thisListner);
+            }
+
+        }
+
 
         Log.d(TAG, "onLocationChanged: "+location);
     }

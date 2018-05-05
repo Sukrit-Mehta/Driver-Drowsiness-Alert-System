@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverCurrentRide;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.UserRide;
 import com.example.sukrit.driverdrowsinessalertsystem.R;
 
@@ -18,10 +19,10 @@ import java.util.ArrayList;
 
 public class UsersRidesAdapter extends RecyclerView.Adapter<UsersRidesAdapter.UserListViewHolder>{
 
-    ArrayList<UserRide> arrayList;
+    ArrayList<DriverCurrentRide> arrayList;
     Context context;
 
-    public UsersRidesAdapter(ArrayList<UserRide> arrayList, Context context) {
+    public UsersRidesAdapter(ArrayList<DriverCurrentRide> arrayList, Context context) {
         this.arrayList = arrayList;
         this.context = context;
     }
@@ -36,7 +37,7 @@ public class UsersRidesAdapter extends RecyclerView.Adapter<UsersRidesAdapter.Us
 
     @Override
     public void onBindViewHolder(UserListViewHolder holder, int position) {
-        UserRide userRide = arrayList.get(position);
+        DriverCurrentRide userRide = arrayList.get(position);
         holder.startTime.setText(userRide.getStartTime());
         holder.endTime.setText(userRide.getEndTime());
     }

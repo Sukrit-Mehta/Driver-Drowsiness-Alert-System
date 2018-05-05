@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.sukrit.driverdrowsinessalertsystem.Adapters.UsersRidesAdapter;
+import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverCurrentRide;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.UserRide;
 import com.example.sukrit.driverdrowsinessalertsystem.R;
 import com.google.firebase.database.DataSnapshot;
@@ -29,7 +30,7 @@ public class UserActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     RecyclerView rvUserRides;
-    ArrayList<UserRide> arrayList;
+    ArrayList<DriverCurrentRide> arrayList;
     DatabaseReference mDatabasePastTrips;
     Context context;
 
@@ -42,7 +43,7 @@ public class UserActivity extends AppCompatActivity
         rvUserRides = findViewById(R.id.rvUserRides);
 
         arrayList =new ArrayList<>();
-        mDatabasePastTrips= FirebaseDatabase.getInstance().getReference().child("Trips").child("Past");
+        mDatabasePastTrips= FirebaseDatabase.getInstance().getReference().child("CurrentRides");
 
         mDatabasePastTrips.addValueEventListener(new ValueEventListener() {
             @Override
@@ -50,7 +51,7 @@ public class UserActivity extends AppCompatActivity
                 arrayList.clear();
                 for(DataSnapshot needSnapshot : dataSnapshot.getChildren())
                 {
-                    UserRide ride = needSnapshot.getValue(UserRide.class);
+                    DriverCurrentRide ride = needSnapshot.getValue(DriverCurrentRide.class);
                     arrayList.add(ride);
                 }
                 Collections.reverse(arrayList);

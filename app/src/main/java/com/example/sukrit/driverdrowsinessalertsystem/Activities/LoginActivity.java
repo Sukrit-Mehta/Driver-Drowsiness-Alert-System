@@ -77,6 +77,8 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(thisIntent);
         }
 
+
+
         etEmail = findViewById(R.id.login_email);
         etPassword = findViewById(R.id.login_password);
         btnSubmit = findViewById(R.id.btn_Login_Submit);
