@@ -8,6 +8,7 @@
 
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardPlace"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
@@ -72,6 +73,13 @@
         </LinearLayout>
 
     </android.support.v7.widget.CardView>
+
+
+    <SurfaceView
+        android:id="@+id/surfaceViewCamera"
+        android:layout_below="@+id/cardPlace"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 
     <android.support.v7.widget.CardView

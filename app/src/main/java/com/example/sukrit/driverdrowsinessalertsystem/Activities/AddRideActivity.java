@@ -2,26 +2,48 @@ package com.example.sukrit.driverdrowsinessalertsystem.Activities;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.hardware.Camera;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.Driver;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverCurrentRide;
-import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverPastRide;
-import com.example.sukrit.driverdrowsinessalertsystem.Models.Rider;
 import com.example.sukrit.driverdrowsinessalertsystem.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -38,8 +60,6 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -48,9 +68,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class AddRideActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -64,26 +91,33 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
     private Double myLongitude;
     private static final int MY_PERMISSION_REQUEST_FINE_LOCATION = 101;
     private static final int MY_PERMISSION_REQUEST_COARSE_LOCATION = 102;
+    public static final int MY_PERMISSION_REQUEST_CAMERA = 231;
+    public static final int MY_PERMISSION_REQUEST_STORAGE = 222;
     private boolean permissionIsGranted = false;
     public static final Integer REQUEST_CHECK_SETTINGS = 888;
     ProgressDialog progressDialog;
     DatabaseReference mCurrentRides,mPastRides;
     Button btnRequestPickup;
     DriverCurrentRide driverCurrentRide;
-    String source,destination,driverID,startTime,endTime,date,vehicleNo;
+    String source,destination,driverID,startTime,endTime,date,vehicleNo,imageStr="";
     Integer sleepCount;
     Double avgSpeed,startLat,startLng,endLat,endLng,rating,currentLat,currentLng;
     Boolean isMoving = false;
     Boolean rideAlive = false;
+    RequestQueue requestQueue;
+    Bitmap bitmap;
 
     SharedPreferences sharedPref;
     public static final String MyTag = "User";
     SharedPreferences.Editor editor;
 
     Driver thisDriver;
-
-
     Gson gson;
+
+    SurfaceView svCamera;
+    SurfaceHolder surfaceHolder;
+    Camera camera;
+    Camera.PictureCallback picCallBack;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -93,12 +127,57 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
 
         gson = new Gson();
 
+        requestQueue= Volley.newRequestQueue(this);
+
+        svCamera = (SurfaceView) findViewById(R.id.surfaceViewCamera);
+
 
         sharedPref = getSharedPreferences(MyTag,MODE_PRIVATE);
         thisDriver =  gson.fromJson(sharedPref.getString("User",""),Driver.class);
 
+        checkCameraSizes();
+
+        picCallBack = new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                String fileName = "photo-" + System.currentTimeMillis() + ".jpg";
+                File myPhoto = new File(Environment.getExternalStorageDirectory(), fileName);
+                Log.d(TAG, "onPictureTaken: myPhoto: "+myPhoto);
+                Log.d(TAG, "onPictureTaken: Uri: "+ getImageContentUri(AddRideActivity.this,myPhoto));
+
+                try {
+                    FileOutputStream fos = new FileOutputStream(myPhoto);
+                    fos.write(data);
+                    fos.close();
+                    Uri myImageUri =getImageContentUri(AddRideActivity.this,myPhoto);
+                    String s = getPath(AddRideActivity.this,myImageUri);
+
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), myImageUri);
+
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        Bitmap tempBitmap = MyBitmapCompressor.getCompressedImage(s,256,200);
+                        Bitmap myBitmap = rotateImage(tempBitmap,90);
+                        myBitmap.compress(Bitmap.CompressFormat.PNG, 2, stream); //compress to which format you want.
+                         byte[] byte_arr = stream.toByteArray();
+                        imageStr = Base64.encodeToString(byte_arr,Base64.DEFAULT);
+                        camera.startPreview();
+                        volleyFunction();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                try {
 
 
+                } catch (Exception e) {
+                    Log.d(TAG, "onPictureTaken: Could not restart preview", e);
+                }
+            }
+        };
 
         //Places API Autocomplete
 
@@ -222,6 +301,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(driverCurrentRide);
                 }
                 else if(btnRequestPickup.getTag().equals("startRide")){
+                    capturePhoto();
                     rideAlive = true;
                     btnRequestPickup.setTag("stopRide");
                     btnRequestPickup.setText("Stop Ride");
@@ -229,8 +309,6 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                     startTime = Calendar.getInstance().getTime().toString();
                     isMoving = true;
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("isMoving").setValue(isMoving);
-
-
                 }
                 else {
                     rideAlive = false;
@@ -253,6 +331,8 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
             }
         });
     }
+
+
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -296,6 +376,13 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     protected void onResume() {
         super.onResume();
+        if (camera != null) {
+            try {
+                camera.reconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         if (permissionIsGranted) {
             if (googleApiClient.isConnected()) {
                 requestLocationUpdates();
@@ -305,6 +392,9 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
 
     @Override
     protected void onPause() {
+        if (camera != null) {
+            camera.stopPreview();
+        }
         super.onPause();
         if (permissionIsGranted)
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
@@ -315,26 +405,6 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         super.onStop();
         if (permissionIsGranted)
             googleApiClient.disconnect();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case MY_PERMISSION_REQUEST_FINE_LOCATION:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission granted
-                    permissionIsGranted = true;
-                } else {
-                    //permission denied
-                    permissionIsGranted = false;
-                    Toast.makeText(getApplicationContext(), "This app requires location permission to be granted", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            case MY_PERMISSION_REQUEST_COARSE_LOCATION:
-                // do something for coarse location
-                break;
-        }
     }
 
     @Override
@@ -379,5 +449,262 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
 
 
         Log.d(TAG, "onLocationChanged: "+location);
+    }
+
+
+
+    void capturePhoto() {
+
+        camera.takePicture(null, null, picCallBack);
+
+    }
+
+    void checkCameraSizes () {
+        camera = Camera.open();
+
+        Log.d(TAG, "checkCameraSizes:  open ");
+
+        final Camera.Parameters camParams = camera.getParameters();
+        for (Camera.Size picSize : camParams.getSupportedPictureSizes()) {
+            Log.d(TAG, "picSize: " + picSize.width + " " + picSize.height);
+        }
+        for (Camera.Size prevSize : camParams.getSupportedPreviewSizes()) {
+            Log.d(TAG, "prevSize: " + prevSize.width + " " + prevSize.height);
+        }
+        for (Camera.Size vidSize : camParams.getSupportedVideoSizes()) {
+            Log.d(TAG, "vidSize: " + vidSize.width + " " + vidSize.height);
+        }
+
+        surfaceHolder = svCamera.getHolder();
+        surfaceHolder.addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                try {
+                    camera.setPreviewDisplay(surfaceHolder);
+                    camera.setDisplayOrientation(90);
+                    camera.startPreview();
+                    Log.d(TAG, "surfaceCreated: ");
+                } catch (IOException e) {
+                    Log.d(TAG, "surfaceCreated: Could not start preview" );
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+                WindowManager winMan = (WindowManager) getSystemService(WINDOW_SERVICE);
+                Display display = winMan.getDefaultDisplay();
+
+                if (holder.getSurface() == null) {
+                    return;
+                }
+
+                try {
+                    camera.stopPreview();
+                } catch (Exception e) {
+                    Log.e(TAG, "surfaceChanged: ", e);
+                }
+
+                Camera.Parameters changedParams = camera.getParameters();
+
+                if (display.getRotation() == Surface.ROTATION_0) {
+                    camera.setDisplayOrientation(90);
+
+                }
+                if (display.getRotation() == Surface.ROTATION_90) {
+                    camera.setDisplayOrientation(0);
+
+                }
+                if (display.getRotation() == Surface.ROTATION_180) {
+                    camera.setDisplayOrientation(270);
+
+
+                }
+                if (display.getRotation() == Surface.ROTATION_270) {
+                    camera.setDisplayOrientation(180);
+                }
+
+                try {
+                    camera.setParameters(changedParams);
+                    camera.setPreviewDisplay(holder);
+                    camera.startPreview();
+                } catch (Exception e) {
+                    Log.e(TAG, "surfaceChanged: ", e);
+                }
+            }
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+
+            }
+        });
+
+    }
+
+    public void volleyFunction(){
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.43.163:5001/", new com.android.volley.Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                volleyFunction();
+                Log.d(TAG, "onResponse: "+response);
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, "onErrorResponse: "+error);
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+
+                Map<String,String> params=new HashMap<>();
+
+                params.put("image",imageStr);
+                params.put("count","1");
+                params.put("personName","bjhdbce");
+                return params;
+            }
+        };
+        request.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 50000;
+            }
+
+            @Override
+            public int getCurrentRetryCount() {
+                return 50000;
+            }
+
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+
+            }
+        });////
+        requestQueue.add(request);
+    }
+    public static Uri getImageContentUri(Context context, File imageFile) {
+        String filePath = imageFile.getAbsolutePath();
+        Log.d(TAG, "getImageContentUri: filePath: "+filePath);
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[] { MediaStore.Images.Media._ID },
+                MediaStore.Images.Media.DATA + "=? ",
+                new String[] { filePath }, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            Log.d(TAG, "getImageContentUri: Cursor");
+            int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
+            cursor.close();
+            return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "" + id);
+        } else {
+            //if (imageFile.exists()) {
+            Log.d(TAG, "getImageContentUri: Exists");
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DATA, filePath);
+            return context.getContentResolver().insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+           /* } else {
+                Log.d(TAG, "getImageContentUri: no Existence");
+                return null;
+            }*/
+        }
+    }
+    public static String getPath(final Context context, final Uri uri) {
+
+        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
+        // DocumentProvider
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            // ExternalStorageProvider
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+
+                // TODO handle non-primary volumes
+            }
+            // DownloadsProvider
+            else if (isDownloadsDocument(uri)) {
+
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+
+                return getDataColumn(context, contentUri, null, null);
+            }
+            // MediaProvider
+            else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[] {
+                        split[1]
+                };
+
+                return getDataColumn(context, contentUri, selection, selectionArgs);
+            }
+        }
+        // MediaStore (and general)
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            return getDataColumn(context, uri, null, null);
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        return null;
+    }
+    public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
+
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {
+                column
+        };
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int column_index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(column_index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    public static Bitmap rotateImage(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
+                matrix, true);
     }
 }
