@@ -57,9 +57,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
-import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -127,6 +124,10 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
 
         gson = new Gson();
 
+        startLat = getIntent().getDoubleExtra("startLat",0.0);
+        startLng = getIntent().getDoubleExtra("startLng",0.0);
+        endLat = getIntent().getDoubleExtra("endLat",0.0);
+        endLng = getIntent().getDoubleExtra("endLng",0.0);
         requestQueue= Volley.newRequestQueue(this);
 
         svCamera = (SurfaceView) findViewById(R.id.surfaceViewCamera);
@@ -242,48 +243,6 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         rating = 4.8;
         sleepCount=0;
 
-        PlaceAutocompleteFragment autocompleteSourceFragment = (PlaceAutocompleteFragment)
-                getFragmentManager().findFragmentById(R.id.place_source);
-
-        PlaceAutocompleteFragment autocompleteDestinationFragment = (PlaceAutocompleteFragment)
-                getFragmentManager().findFragmentById(R.id.place_destination);
-
-        autocompleteSourceFragment.setHint("Source");
-        autocompleteDestinationFragment.setHint("Destination");
-
-        autocompleteSourceFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
-                source = place.getName().toString();
-                startLat = place.getLatLng().latitude;
-                startLng = place.getLatLng().longitude;
-                Log.i("TAG", "Place: " + place.getName());
-            }
-
-            @Override
-            public void onError(Status status) {
-                // TODO: Handle the error.
-                Log.i("TAG", "An error occurred: " + status);
-            }
-        });
-
-        autocompleteDestinationFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
-                destination = place.getName().toString();
-                endLat = place.getLatLng().latitude;
-                endLng = place.getLatLng().longitude;
-                Log.i("TAG", "Place: " + place.getName());
-            }
-
-            @Override
-            public void onError(Status status) {
-                // TODO: Handle the error.
-                Log.i("TAG", "An error occurred: " + status);
-            }
-        });
 
         btnRequestPickup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -293,12 +252,14 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                     btnRequestPickup.setTag("startRide");
                     btnRequestPickup.setText("Start Ride");
                     btnRequestPickup.setBackgroundColor(Color.parseColor("#5ed83c"));
-                    driverCurrentRide=new DriverCurrentRide(source,destination,driverID,
+                   /* driverCurrentRide=new DriverCurrentRide(source,destination,driverID,
                             sleepCount,avgSpeed,startLat,
                             startLng,endLat,endLng,startTime,
                             endTime,date,rating, currentLat,
-                            currentLng,vehicleNo,isMoving);
+                            currentLng,vehicleNo,isMoving);*/
+/*
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(driverCurrentRide);
+*/
                 }
                 else if(btnRequestPickup.getTag().equals("startRide")){
                     capturePhoto();
@@ -308,6 +269,12 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                     btnRequestPickup.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark));
                     startTime = Calendar.getInstance().getTime().toString();
                     isMoving = true;
+                    driverCurrentRide=new DriverCurrentRide(source,destination,driverID,
+                            sleepCount,avgSpeed,startLat,
+                            startLng,endLat,endLng,startTime,
+                            endTime,date,rating, currentLat,
+                            currentLng,vehicleNo,isMoving);
+                    mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(driverCurrentRide);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("isMoving").setValue(isMoving);
                 }
                 else {
