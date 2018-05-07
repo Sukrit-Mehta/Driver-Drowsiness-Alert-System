@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/holo_red_dark"
+    tools:context="com.example.sukrit.driverdrowsinessalertsystem.Activities.DriverSleepAlertActivity">
+
+
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/caution"
+        android:layout_above="@+id/tv_caution"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="42dp" />
+
+    <TextView
+        android:id="@+id/tv_caution"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="Caution!"
+        android:textSize="38sp"
+        android:layout_centerInParent="true"
+        android:textColor="@android:color/white"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Your Driver is Sleeping"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_below="@+id/tv_caution"
+        android:textSize="20sp"
+        android:textColor="@android:color/white"/>
+
+</RelativeLayout>
