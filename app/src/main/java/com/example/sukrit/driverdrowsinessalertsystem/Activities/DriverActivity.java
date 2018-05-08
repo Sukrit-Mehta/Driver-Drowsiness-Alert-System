@@ -3,7 +3,6 @@ package com.example.sukrit.driverdrowsinessalertsystem.Activities;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
@@ -17,14 +16,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.example.sukrit.driverdrowsinessalertsystem.Adapters.DriverRidesAdapter;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverPastRide;
 import com.example.sukrit.driverdrowsinessalertsystem.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -87,7 +82,7 @@ public class DriverActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent thisIntent = new Intent(DriverActivity.this,AddRideActivity.class);
+                Intent thisIntent = new Intent(DriverActivity.this,PlaceSelectionActivity.class);
                 startActivity(thisIntent);
             }
         });

@@ -97,7 +97,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
     Button btnRequestPickup;
     DriverCurrentRide driverCurrentRide;
     String source,destination,driverID,startTime,endTime,date,vehicleNo,imageStr="";
-    Integer sleepCount;
+    Integer sleepCount=0;
     Double avgSpeed,startLat,startLng,endLat,endLng,rating,currentLat,currentLng;
     Boolean isMoving = false;
     Boolean rideAlive = false;
@@ -115,6 +115,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
     SurfaceHolder surfaceHolder;
     Camera camera;
     Camera.PictureCallback picCallBack;
+    DatabaseReference dbIsSleeping;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -123,7 +124,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         setContentView(R.layout.activity_add_ride);
 
         gson = new Gson();
-
+        dbIsSleeping = FirebaseDatabase.getInstance().getReference().child("isSleeping");
         startLat = getIntent().getDoubleExtra("startLat",0.0);
         startLng = getIntent().getDoubleExtra("startLng",0.0);
         endLat = getIntent().getDoubleExtra("endLat",0.0);
@@ -158,7 +159,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
 
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
                         Bitmap tempBitmap = MyBitmapCompressor.getCompressedImage(s,256,200);
-                        Bitmap myBitmap = rotateImage(tempBitmap,90);
+                        Bitmap myBitmap = rotateImage(tempBitmap,270);
                         myBitmap.compress(Bitmap.CompressFormat.PNG, 2, stream); //compress to which format you want.
                          byte[] byte_arr = stream.toByteArray();
                         imageStr = Base64.encodeToString(byte_arr,Base64.DEFAULT);
@@ -241,8 +242,6 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
 
 
         rating = 4.8;
-        sleepCount=0;
-
 
         btnRequestPickup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -290,6 +289,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                             .child("endLng").setValue(currentLng);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                             .child("isMoving").setValue(false);
+                    dbIsSleeping.setValue(false);
                     mPastRides.push().setValue(driverCurrentRide);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
 
@@ -427,7 +427,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
     }
 
     void checkCameraSizes () {
-        camera = Camera.open();
+        camera = Camera.open(1);
 
         Log.d(TAG, "checkCameraSizes:  open ");
 
@@ -512,13 +512,26 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.43.163:5001/", new com.android.volley.Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                volleyFunction();
+                //volleyFunction();
+                capturePhoto();
+                if(response!=null)
+                if(Double.parseDouble(response)<0.25)
+                    sleepCount++;
+                else {
+                    if(sleepCount>0)
+                        sleepCount=0;
+                }
+                Log.d(TAG, "onResponse: sleepCount = "+sleepCount);
+                if(sleepCount>=3)
+                    dbIsSleeping.setValue(true);
                 Log.d(TAG, "onResponse: "+response);
             }
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                Toast.makeText(AddRideActivity.this, "Face not visible..!", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "onErrorResponse: "+error);
+                capturePhoto();
             }
         }){
             @Override
