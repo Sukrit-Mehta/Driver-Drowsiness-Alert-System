@@ -289,7 +289,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                             .child("endLng").setValue(currentLng);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                             .child("isMoving").setValue(false);
-                    dbIsSleeping.setValue(false);
+                    dbIsSleeping.child("sleep").setValue(false);
                     mPastRides.push().setValue(driverCurrentRide);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
 
@@ -523,7 +523,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                 }
                 Log.d(TAG, "onResponse: sleepCount = "+sleepCount);
                 if(sleepCount>=3)
-                    dbIsSleeping.setValue(true);
+                    dbIsSleeping.child("sleep").setValue(true);
                 Log.d(TAG, "onResponse: "+response);
             }
         }, new com.android.volley.Response.ErrorListener() {
@@ -531,7 +531,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
             public void onErrorResponse(VolleyError error) {
                 Toast.makeText(AddRideActivity.this, "Face not visible..!", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "onErrorResponse: "+error);
-                capturePhoto();
+                //capturePhoto();
             }
         }){
             @Override
