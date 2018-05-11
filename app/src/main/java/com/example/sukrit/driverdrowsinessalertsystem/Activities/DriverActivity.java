@@ -47,7 +47,7 @@ public class DriverActivity extends AppCompatActivity
         rvDriverRides = findViewById(R.id.rvDriverRides);
 
         arrayList =new ArrayList<>();
-        mDatabasePastTrips= FirebaseDatabase.getInstance().getReference().child("Trips").child("Past");
+        mDatabasePastTrips= FirebaseDatabase.getInstance().getReference().child("PastRides");
 
         mDatabasePastTrips.addValueEventListener(new ValueEventListener() {
             @Override
@@ -56,6 +56,7 @@ public class DriverActivity extends AppCompatActivity
                 for(DataSnapshot needSnapshot : dataSnapshot.getChildren())
                 {
                     DriverPastRide ride = needSnapshot.getValue(DriverPastRide.class);
+
                     arrayList.add(ride);
                 }
                 Collections.reverse(arrayList);

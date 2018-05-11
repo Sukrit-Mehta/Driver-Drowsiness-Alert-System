@@ -37,6 +37,8 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
     @Override
     public void onBindViewHolder(DriverListViewHolder holder, int position) {
         DriverPastRide pastRide = arrayList.get(position);
+        holder.source.setText("New Delhi");
+        holder.destination.setText("Meerut");
         holder.startTime.setText(pastRide.getStartTime());
         holder.endTime.setText(pastRide.getEndTime());
     }
