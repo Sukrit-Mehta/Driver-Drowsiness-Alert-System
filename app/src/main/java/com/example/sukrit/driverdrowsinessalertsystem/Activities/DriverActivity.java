@@ -79,6 +79,7 @@ public class DriverActivity extends AppCompatActivity
         final DriverPastRide demoRide = new DriverPastRide("Meerut","Noida","1234",21,55.2,22.3,77.8,22.3,77.8,"12:40","14:20","24-10-1997",4.5);
 
 
+
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override

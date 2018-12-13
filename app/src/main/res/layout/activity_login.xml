@@ -45,11 +45,8 @@
 
 
 
-    <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        >
+
+<android.support.design.widget.TextInputLayout>
 
         <EditText
             android:layout_width="match_parent"

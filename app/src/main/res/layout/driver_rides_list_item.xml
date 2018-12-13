@@ -166,7 +166,7 @@
                 <LinearLayout
                     android:id="@+id/LLdetails"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:weightSum="4">
 
@@ -178,17 +178,18 @@
 
                     <LinearLayout
                         android:layout_width="0dp"
-                        android:layout_height="60dp"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:padding="7dp"
+                        android:paddingTop="7dp"
+                        android:paddingLeft="7dp"
+                        android:paddingEnd="7dp"
                         android:weightSum="2">
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="top"
-                            android:layout_weight="1"
                             android:text="Start Time"
                             android:textAlignment="center"
                             android:textColor="#162e4f"
@@ -198,8 +199,6 @@
                             android:id="@+id/tvStartTime"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="top"
-                            android:layout_weight="1"
                             android:text="11:30"
                             android:textAlignment="center"
                             android:textColor="#162e4f"

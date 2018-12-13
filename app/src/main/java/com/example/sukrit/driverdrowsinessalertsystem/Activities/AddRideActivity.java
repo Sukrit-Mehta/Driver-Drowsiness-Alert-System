@@ -70,6 +70,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -103,6 +104,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
     Boolean rideAlive = false;
     RequestQueue requestQueue;
     Bitmap bitmap;
+    ArrayList<Double> earArrayList;
 
     SharedPreferences sharedPref;
     public static final String MyTag = "User";
@@ -115,7 +117,8 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
     SurfaceHolder surfaceHolder;
     Camera camera;
     Camera.PictureCallback picCallBack;
-    DatabaseReference dbIsSleeping;
+    DatabaseReference dbIsSleeping, dbIsDrowsy ;
+    int totalCount = 0, drowsyCount = 0 ;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -123,8 +126,10 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_ride);
 
+        earArrayList = new ArrayList<>();
         gson = new Gson();
         dbIsSleeping = FirebaseDatabase.getInstance().getReference().child("isSleeping");
+        dbIsDrowsy = FirebaseDatabase.getInstance().getReference().child("isDrowsy");
         startLat = getIntent().getDoubleExtra("startLat",0.0);
         startLng = getIntent().getDoubleExtra("startLng",0.0);
         endLat = getIntent().getDoubleExtra("endLat",0.0);
@@ -163,6 +168,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                         myBitmap.compress(Bitmap.CompressFormat.PNG, 2, stream); //compress to which format you want.
                          byte[] byte_arr = stream.toByteArray();
                         imageStr = Base64.encodeToString(byte_arr,Base64.DEFAULT);
+                        Log.d(TAG, "onPictureTaken: imgStr = " +imageStr);
                         camera.startPreview();
                         volleyFunction();
                     } catch (IOException e) {
@@ -290,6 +296,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                             .child("isMoving").setValue(false);
                     dbIsSleeping.child("sleep").setValue(false);
+                    dbIsDrowsy.child("drowsy").setValue(false);
                     mPastRides.push().setValue(driverCurrentRide);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
 
@@ -509,10 +516,9 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
     }
 
     public void volleyFunction(){
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.43.187:5001/", new com.android.volley.Response.Listener<String>() {
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.43.163:5001/", new com.android.volley.Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                //volleyFunction();
                 capturePhoto();
                 if(response!=null)
                 if(Double.parseDouble(response)<0.25)
@@ -521,6 +527,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                     if(sleepCount>0)
                         sleepCount=0;
                 }
+                perclosFunction(Double.parseDouble(response));
                 Log.d(TAG, "onResponse: sleepCount = "+sleepCount);
                 if(sleepCount>=3)
                     dbIsSleeping.child("sleep").setValue(true);
@@ -542,6 +549,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                 params.put("image",imageStr);
                 params.put("count","1");
                 params.put("personName","bjhdbce");
+                Log.d(TAG, "getParams: " +params);
                 return params;
             }
         };
@@ -560,9 +568,29 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
             public void retry(VolleyError error) throws VolleyError {
 
             }
-        });////
+        });
         requestQueue.add(request);
     }
+
+    public void perclosFunction(Double ear){
+        totalCount++;
+        earArrayList.add(ear);
+        if(ear<0.25){
+            drowsyCount++;
+            Log.d(TAG, "perclosFunction: "+drowsyCount);
+        }
+        if(totalCount == 14){
+            Double percent = (drowsyCount * 1.0/totalCount)*100.0;
+            Log.d(TAG, "perclosFunction %: " + percent);
+            if(percent>50){
+                // Trigger firebase for the state of drowsiness only..!
+                dbIsDrowsy.child("drowsy").setValue(true);
+            }
+            totalCount = 0;
+            drowsyCount = 0;
+        }
+    }
+
     public static Uri getImageContentUri(Context context, File imageFile) {
         String filePath = imageFile.getAbsolutePath();
         Log.d(TAG, "getImageContentUri: filePath: "+filePath);
