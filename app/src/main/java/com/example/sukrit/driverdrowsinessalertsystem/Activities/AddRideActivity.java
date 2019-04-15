@@ -44,6 +44,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.Driver;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverCurrentRide;
+import com.example.sukrit.driverdrowsinessalertsystem.Models.ReturnObject;
 import com.example.sukrit.driverdrowsinessalertsystem.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -514,24 +515,110 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         });
 
     }
+//
+//    public void volleyFunction(){
+//
+//        Map<String,String> params=new HashMap<>();
+//        params.put("image",imageStr);
+//        params.put("count","1");
+//        params.put("personName","bjhdbce");
+//        JSONObject j = new JSONObject(params);
+//
+//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, "http://192.168.43.187:5002/",
+//                j, new Response.Listener<JSONObject>() {
+//            @Override
+//            public void onResponse(JSONObject response) {
+//                Log.d(TAG, "return_list: "+response);
+//            }
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//
+//            }
+//        });
+//
+////        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.43.163:5001/", new com.android.volley.Response.Listener<String>() {
+////        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, "http://192.168.43.187:5002/", new com.android.volley.Response.Listener<String>() {
+////            @Override
+////            public void onResponse(String response) {
+////                capturePhoto();
+////                Log.d(TAG, "return_list: "+response);
+////            }
+////        }, new com.android.volley.Response.ErrorListener() {
+////            @Override
+////            public void onErrorResponse(VolleyError error) {
+////                Toast.makeText(AddRideActivity.this, "Face not visible..!", Toast.LENGTH_SHORT).show();
+////                Log.d(TAG, "onErrorResponse: "+error);
+////                //capturePhoto();
+////            }
+////        }){
+////            @Override
+////            protected Map<String, String> getParams() throws AuthFailureError {
+////
+////                Map<String,String> params=new HashMap<>();
+////
+////                params.put("image",imageStr);
+////                params.put("count","1");
+////                params.put("personName","bjhdbce");
+////                Log.d(TAG, "getParams: " +params);
+////                return params;
+////            }
+////        };
+//        request.setRetryPolicy(new RetryPolicy() {
+//            @Override
+//            public int getCurrentTimeout() {
+//                return 50000;
+//            }
+//
+//            @Override
+//            public int getCurrentRetryCount() {
+//                return 50000;
+//            }
+//
+//            @Override
+//            public void retry(VolleyError error) throws VolleyError {
+//
+//            }
+//        });
+//        requestQueue.add(request);
+//    }
+
+
 
     public void volleyFunction(){
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.43.163:5001/", new com.android.volley.Response.Listener<String>() {
+//        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.43.163:5001/", new com.android.volley.Response.Listener<String>() {
+          StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.43.187:5002/", new com.android.volley.Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 capturePhoto();
+//                if(response!=null)
+//                if(Double.parseDouble(response)<0.25)
+//                    sleepCount++;
+//                else {
+//                    if(sleepCount>0)
+//                        sleepCount=0;
+//                }
+//                perclosFunction(Double.parseDouble(response));
+//                Log.d(TAG, "onResponse: sleepCount = "+sleepCount);
+//                if(sleepCount>=3)
+//                    dbIsSleeping.child("sleep").setValue(true);
+                 Gson gson = new Gson();
+                 ReturnObject returnObject  = gson.fromJson(response, ReturnObject.class);
+                Log.d(TAG, "return_list: Ear =  "+returnObject.getEar()+"\n"+
+                        "Mor =  "+returnObject.getMor()+"\n"+
+                        "Nlr =  "+returnObject.getNlr()+"\n");
+
                 if(response!=null)
-                if(Double.parseDouble(response)<0.25)
+                if(Double.parseDouble(returnObject.getEar())<0.25)
                     sleepCount++;
                 else {
                     if(sleepCount>0)
                         sleepCount=0;
                 }
-                perclosFunction(Double.parseDouble(response));
                 Log.d(TAG, "onResponse: sleepCount = "+sleepCount);
-                if(sleepCount>=3)
+                if(sleepCount>=3 || (Double.parseDouble(returnObject.getMor())>0.35)
+                                 || (Double.parseDouble(returnObject.getNlr())<40))
                     dbIsSleeping.child("sleep").setValue(true);
-                Log.d(TAG, "onResponse: "+response);
             }
         }, new com.android.volley.Response.ErrorListener() {
             @Override
@@ -577,11 +664,11 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         earArrayList.add(ear);
         if(ear<0.25){
             drowsyCount++;
-            Log.d(TAG, "perclosFunction: "+drowsyCount);
+           // Log.d(TAG, "perclosFunction: "+drowsyCount);
         }
         if(totalCount == 14){
             Double percent = (drowsyCount * 1.0/totalCount)*100.0;
-            Log.d(TAG, "perclosFunction %: " + percent);
+            Log.d(TAG, "EyeClosureRatio: " + percent);
             if(percent>50){
                 // Trigger firebase for the state of drowsiness only..!
                 dbIsDrowsy.child("drowsy").setValue(true);
