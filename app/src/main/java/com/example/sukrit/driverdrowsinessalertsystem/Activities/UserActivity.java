@@ -1,6 +1,7 @@
 package com.example.sukrit.driverdrowsinessalertsystem.Activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -14,8 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.sukrit.driverdrowsinessalertsystem.Adapters.UsersRidesAdapter;
+import com.example.sukrit.driverdrowsinessalertsystem.FirebaseServiceAlert;
 import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverCurrentRide;
-import com.example.sukrit.driverdrowsinessalertsystem.Models.UserRide;
 import com.example.sukrit.driverdrowsinessalertsystem.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -106,6 +107,8 @@ public class UserActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        startService(new Intent(this, FirebaseServiceAlert.class));
     }
 
     @Override
