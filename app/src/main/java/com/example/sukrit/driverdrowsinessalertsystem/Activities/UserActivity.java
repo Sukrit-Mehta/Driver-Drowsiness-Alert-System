@@ -13,6 +13,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.RelativeLayout;
 
 import com.example.sukrit.driverdrowsinessalertsystem.Adapters.UsersRidesAdapter;
 import com.example.sukrit.driverdrowsinessalertsystem.FirebaseServiceAlert;
@@ -34,6 +36,7 @@ public class UserActivity extends AppCompatActivity
     ArrayList<DriverCurrentRide> arrayList;
     DatabaseReference mDatabasePastTrips;
     Context context;
+    RelativeLayout rl1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,7 @@ public class UserActivity extends AppCompatActivity
 
         context = this;
         rvUserRides = findViewById(R.id.rvUserRides);
+        rl1 = findViewById(R.id.rl1);
 
         arrayList =new ArrayList<>();
         mDatabasePastTrips= FirebaseDatabase.getInstance().getReference().child("CurrentRides");
@@ -56,8 +60,16 @@ public class UserActivity extends AppCompatActivity
                     arrayList.add(ride);
                 }
                 Collections.reverse(arrayList);
-                UsersRidesAdapter usersRidesAdapter= new UsersRidesAdapter(arrayList,context);
-                rvUserRides.setAdapter(usersRidesAdapter);
+                if(arrayList.size()>0){
+                    rvUserRides.setVisibility(View.VISIBLE);
+                    rl1.setVisibility(View.GONE);
+                    UsersRidesAdapter usersRidesAdapter= new UsersRidesAdapter(arrayList,context);
+                    rvUserRides.setAdapter(usersRidesAdapter);
+                }
+                else {
+                    rvUserRides.setVisibility(View.GONE);
+                    rl1.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override

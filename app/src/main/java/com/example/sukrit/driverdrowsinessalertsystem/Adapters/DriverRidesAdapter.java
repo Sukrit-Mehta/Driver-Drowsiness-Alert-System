@@ -37,10 +37,11 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
     @Override
     public void onBindViewHolder(DriverListViewHolder holder, int position) {
         DriverPastRide pastRide = arrayList.get(position);
-        holder.source.setText("New Delhi");
-        holder.destination.setText("Meerut");
+        holder.source.setText(pastRide.getSource());
+        holder.destination.setText(pastRide.getDestination());
         holder.startTime.setText(pastRide.getStartTime());
         holder.endTime.setText(pastRide.getEndTime());
+        holder.tvDate.setText(pastRide.getDate());
     }
 
     @Override
@@ -50,7 +51,7 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
 
     class DriverListViewHolder extends RecyclerView.ViewHolder
     {
-        TextView source,destination,startTime,endTime,avgSpeed;
+        TextView source,destination,startTime,endTime,avgSpeed,tvDate;
         View testView;
 
         public DriverListViewHolder(View itemView) {
@@ -60,6 +61,7 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
             startTime = itemView.findViewById(R.id.tvStartTime);
             endTime = itemView.findViewById(R.id.tvEndTime);
             avgSpeed = itemView.findViewById(R.id.tvAvgSpeed);
+            tvDate = itemView.findViewById(R.id.tvDate);
             testView = itemView;
         }
     }

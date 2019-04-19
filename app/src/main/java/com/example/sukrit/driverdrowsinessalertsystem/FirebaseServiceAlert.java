@@ -52,12 +52,13 @@ public class FirebaseServiceAlert extends Service {
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                Log.d("SERI", "onChildChanged: ");
-                Intent gotomain =  new Intent();
-                gotomain.setClassName("com.example.sukrit.driverdrowsinessalertsystem","com.example.sukrit.driverdrowsinessalertsystem.Activities.DriverSleepAlertActivity");
-                gotomain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(gotomain);
-
+                Log.d("SERI", "onChildChanged: "+dataSnapshot.getValue());
+                if(dataSnapshot.getValue().toString().equalsIgnoreCase("true")) {
+                    Intent gotomain = new Intent();
+                    gotomain.setClassName("com.example.sukrit.driverdrowsinessalertsystem", "com.example.sukrit.driverdrowsinessalertsystem.Activities.DriverSleepAlertActivity");
+                    gotomain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(gotomain);
+                }
             }
 
             @Override

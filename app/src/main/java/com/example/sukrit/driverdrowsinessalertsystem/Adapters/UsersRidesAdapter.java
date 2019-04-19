@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.sukrit.driverdrowsinessalertsystem.Models.DriverCurrentRide;
-import com.example.sukrit.driverdrowsinessalertsystem.Models.UserRide;
 import com.example.sukrit.driverdrowsinessalertsystem.R;
 
 import java.util.ArrayList;
@@ -40,6 +39,9 @@ public class UsersRidesAdapter extends RecyclerView.Adapter<UsersRidesAdapter.Us
         DriverCurrentRide userRide = arrayList.get(position);
         holder.startTime.setText(userRide.getStartTime());
         holder.endTime.setText(userRide.getEndTime());
+        holder.source.setText(userRide.getSource());
+        holder.destination.setText(userRide.getDestination());
+        holder.tvDate.setText(userRide.getDate());
     }
 
     @Override
@@ -49,7 +51,7 @@ public class UsersRidesAdapter extends RecyclerView.Adapter<UsersRidesAdapter.Us
 
     class UserListViewHolder extends RecyclerView.ViewHolder
     {
-        TextView source,destination,startTime,endTime,avgSpeed;
+        TextView source,destination,startTime,endTime,avgSpeed,tvDate;
         View testView;
 
         public UserListViewHolder(View itemView) {
@@ -59,6 +61,7 @@ public class UsersRidesAdapter extends RecyclerView.Adapter<UsersRidesAdapter.Us
             startTime = itemView.findViewById(R.id.tvStartTime);
             endTime = itemView.findViewById(R.id.tvEndTime);
             avgSpeed = itemView.findViewById(R.id.tvAvgSpeed);
+            tvDate = itemView.findViewById(R.id.tvDate);
             testView = itemView;
         }
     }

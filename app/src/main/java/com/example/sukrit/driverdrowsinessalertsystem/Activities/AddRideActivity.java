@@ -135,6 +135,8 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         startLng = getIntent().getDoubleExtra("startLng",0.0);
         endLat = getIntent().getDoubleExtra("endLat",0.0);
         endLng = getIntent().getDoubleExtra("endLng",0.0);
+        source = getIntent().getStringExtra("src");
+        destination = getIntent().getStringExtra("dest");
         requestQueue= Volley.newRequestQueue(this);
 
         svCamera = (SurfaceView) findViewById(R.id.surfaceViewCamera);
@@ -243,8 +245,9 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
         });
 
         driverID = FirebaseAuth.getInstance().getUid();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM d, ''yy");
         date = sdf.format(new Date());
+
         vehicleNo=thisDriver.getVehicleNo();
 
 
@@ -280,6 +283,8 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                             startLng,endLat,endLng,startTime,
                             endTime,date,rating, currentLat,
                             currentLng,vehicleNo,isMoving);
+                    Log.d(TAG, "onClick: "+driverCurrentRide.getSource()+","
+                    +driverCurrentRide.getDestination());
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(driverCurrentRide);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("isMoving").setValue(isMoving);
                 }
@@ -296,9 +301,13 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                             .child("endLng").setValue(currentLng);
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                             .child("isMoving").setValue(false);
+                    mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                            .child("endTime").setValue( Calendar.getInstance().getTime().toString());
                     dbIsSleeping.child("sleep").setValue(false);
                     dbIsDrowsy.child("drowsy").setValue(false);
+                    driverCurrentRide.setEndTime(Calendar.getInstance().getTime().toString());
                     mPastRides.push().setValue(driverCurrentRide);
+
                     mCurrentRides.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
 
 
@@ -616,7 +625,7 @@ public class AddRideActivity extends AppCompatActivity implements GoogleApiClien
                         sleepCount=0;
                 }
                 Log.d(TAG, "onResponse: sleepCount = "+sleepCount);
-                if(sleepCount>=3 || (Double.parseDouble(returnObject.getMor())>0.35)
+                if(sleepCount>=2 || (Double.parseDouble(returnObject.getMor())>0.35)
                                  || (Double.parseDouble(returnObject.getNlr())<40))
                     dbIsSleeping.child("sleep").setValue(true);
             }

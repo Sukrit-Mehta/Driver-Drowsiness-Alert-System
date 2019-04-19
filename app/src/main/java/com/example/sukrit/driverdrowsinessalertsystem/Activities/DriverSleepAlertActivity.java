@@ -14,16 +14,16 @@ public class DriverSleepAlertActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_sleep_alert);
-       // mp = MediaPlayer.create(this,R.raw.siren);
-        //mp.start();
+        mp = MediaPlayer.create(this,R.raw.siren);
+        mp.start();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-//        if(mp.isPlaying())
-//        {
-//            mp.stop();
-//        }
+        if(mp.isPlaying())
+        {
+            mp.stop();
+        }
     }
 }

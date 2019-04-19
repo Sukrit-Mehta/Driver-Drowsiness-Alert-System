@@ -75,7 +75,8 @@ public class PlaceSelectionActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(PlaceSelectionActivity.this,AddRideActivity.class);
                 intent.putExtra("startLat",startLat).putExtra("startLng",startLng)
-                        .putExtra("endLat",endLat).putExtra("endLng",endLng);
+                        .putExtra("endLat",endLat).putExtra("endLng",endLng)
+                        .putExtra("src",source).putExtra("dest",destination);
                 startActivity(intent);
             }
         });
